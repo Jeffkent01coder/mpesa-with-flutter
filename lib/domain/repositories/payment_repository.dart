@@ -1,11 +1,10 @@
-import '../entities/payment.dart';
+import '../../domain/entities/payment.dart';
 
 abstract class PaymentRepository {
-  // Initiate a payment transaction
   Future<PaymentResult> initiatePayment(Payment payment);
+  Future<PaymentResult> checkPaymentStatus(String checkoutRequestId);
 }
 
-// Result class to encapsulate the outcome of a payment operation
 class PaymentResult {
   final bool success;
   final String message;
@@ -17,20 +16,11 @@ class PaymentResult {
     this.data,
   });
 
-  // Factory constructor for success case
   factory PaymentResult.success(String message, {Map<String, dynamic>? data}) {
-    return PaymentResult(
-      success: true,
-      message: message,
-      data: data,
-    );
+    return PaymentResult(success: true, message: message, data: data);
   }
 
-  // Factory constructor for failure case
   factory PaymentResult.failure(String message) {
-    return PaymentResult(
-      success: false,
-      message: message,
-    );
+    return PaymentResult(success: false, message: message);
   }
 }

@@ -9,20 +9,25 @@ class PaymentProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   String? _successMessage;
+  String? _transactionStatus;
+  String? _checkoutRequestId;
 
   // Getters
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   String? get successMessage => _successMessage;
+  String? get transactionStatus => _transactionStatus;
 
   // Reset state
   void resetState() {
     _errorMessage = null;
     _successMessage = null;
+    _transactionStatus = null;
+    _checkoutRequestId = null;
     notifyListeners();
   }
 
-  // Process payment
+  // Process payment with status checking
   Future<bool> processPayment({
     required String phoneNumber,
     required String amount,
@@ -39,13 +44,15 @@ class PaymentProvider extends ChangeNotifier {
         amountString: amount,
       );
 
-      _isLoading = false;
-
       if (result.success) {
-        _successMessage = result.message;
-        notifyListeners();
+        _checkoutRequestId = result.data?['CheckoutRequestID'];
+        _successMessage = 'STK Push initiated. Please enter PIN on your phone.';
+        
+        // Start status checking
+        await _checkTransactionStatus();
         return true;
       } else {
+        _isLoading = false;
         _errorMessage = result.message;
         notifyListeners();
         return false;
@@ -55,6 +62,46 @@ class PaymentProvider extends ChangeNotifier {
       _errorMessage = "Unexpected error: ${e.toString()}";
       notifyListeners();
       return false;
+    }
+  }
+
+  // Check transaction status periodically
+  Future<void> _checkTransactionStatus() async {
+    if (_checkoutRequestId == null) return;
+
+    const maxAttempts = 10;
+    const delay = Duration(seconds: 3);
+    int attempts = 0;
+
+    while (attempts < maxAttempts) {
+      try {
+        final statusResult = await _processPaymentUseCase.checkStatus(_checkoutRequestId!);
+        
+        if (statusResult.success) {
+          _transactionStatus = statusResult.data?['ResultCode'] == '0' ? 'Success' : 'Failed';
+          _isLoading = false;
+          
+          if (_transactionStatus == 'Success') {
+            _successMessage = 'Payment completed successfully!';
+          } else {
+            _errorMessage = statusResult.data?['ResultDesc'] ?? 'Payment failed';
+          }
+          notifyListeners();
+          return;
+        }
+        
+        attempts++;
+        await Future.delayed(delay);
+      } catch (e) {
+        attempts++;
+        if (attempts >= maxAttempts) {
+          _isLoading = false;
+          _errorMessage = 'Failed to verify transaction status';
+          notifyListeners();
+          return;
+        }
+        await Future.delayed(delay);
+      }
     }
   }
 }

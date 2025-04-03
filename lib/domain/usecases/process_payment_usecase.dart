@@ -6,12 +6,10 @@ class ProcessPaymentUseCase {
 
   ProcessPaymentUseCase(this.repository);
 
-  // Execute the use case with the given parameters
   Future<PaymentResult> execute({
     required String phoneNumber,
     required String amountString,
   }) async {
-    // Validate input
     if (phoneNumber.isEmpty || amountString.isEmpty) {
       return PaymentResult.failure("Phone number and amount are required");
     }
@@ -25,12 +23,15 @@ class ProcessPaymentUseCase {
       return PaymentResult.failure("Please enter a valid amount greater than 0");
     }
 
-    // Create payment entity and process it through the repository
     final payment = Payment(
       phoneNumber: phoneNumber,
       amount: amount,
     );
 
     return await repository.initiatePayment(payment);
+  }
+
+  Future<PaymentResult> checkStatus(String checkoutRequestId) async {
+    return await repository.checkPaymentStatus(checkoutRequestId);
   }
 }

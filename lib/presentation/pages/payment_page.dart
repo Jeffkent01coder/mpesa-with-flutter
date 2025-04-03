@@ -32,7 +32,6 @@ class _PaymentPageState extends State<PaymentPage> {
   Widget build(BuildContext context) {
     return Consumer<PaymentProvider>(
       builder: (context, provider, child) {
-        // Listen for messages from the provider
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (provider.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -53,7 +52,9 @@ class _PaymentPageState extends State<PaymentPage> {
                 duration: const Duration(seconds: 5),
               ),
             );
-            provider.resetState();
+            if (provider.transactionStatus == 'Success') {
+              provider.resetState();
+            }
           }
         });
 
@@ -120,6 +121,17 @@ class _PaymentPageState extends State<PaymentPage> {
                       return null;
                     },
                   ),
+                  const SizedBox(height: 20.0),
+                  if (provider.transactionStatus != null)
+                    Text(
+                      'Transaction Status: ${provider.transactionStatus}',
+                      style: TextStyle(
+                        color: provider.transactionStatus == 'Success'
+                            ? Colors.green
+                            : Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   const SizedBox(height: 30.0),
                   SizedBox(
                     width: double.infinity,
@@ -162,7 +174,7 @@ class _PaymentPageState extends State<PaymentPage> {
             ),
           ),
         );
-      }
+      },
     );
   }
 }
