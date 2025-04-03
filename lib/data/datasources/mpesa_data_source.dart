@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:mpesa_flutter_plugin/initializer.dart';
 import '../models/payment_model.dart';
+import 'package:mpesa/config/config.dart';
 
 abstract class MpesaDataSource {
   Future<Map<String, dynamic>> initiateSTKPush(PaymentModel payment);
@@ -10,13 +11,16 @@ abstract class MpesaDataSource {
 }
 
 class MpesaDataSourceImpl implements MpesaDataSource {
-  static const String _consumerKey = "Your Consumer Key";
-  static const String _consumerSecret = "Your Consumer Secret Key";
-  static const String _passKey = "Your pass Key";
-  static const String _businessShortCode = "174379";
-  static const String _accessTokenUrl = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials";
-  static const String _stkPushUrl = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
-  static const String _queryUrl = "https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query";
+  static const String _consumerKey = AppConfig.consumerKey;
+  static const String _consumerSecret = AppConfig.consumerSecret;
+  static const String _passKey = AppConfig.passKey;
+  static const String _businessShortCode = AppConfig.businessShortCode;
+  static const String _accessTokenUrl =
+      "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials";
+  static const String _stkPushUrl =
+      "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
+  static const String _queryUrl =
+      "https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query";
 
   String? _cachedAccessToken;
 
@@ -69,7 +73,8 @@ class MpesaDataSourceImpl implements MpesaDataSource {
     try {
       final accessToken = await _getAccessToken();
       final timestamp = _getTimestamp();
-      final password = _generatePassword(_businessShortCode, _passKey, timestamp);
+      final password =
+          _generatePassword(_businessShortCode, _passKey, timestamp);
 
       final response = await http.post(
         Uri.parse(_stkPushUrl),
@@ -86,7 +91,8 @@ class MpesaDataSourceImpl implements MpesaDataSource {
           'PartyA': payment.phoneNumber,
           'PartyB': _businessShortCode,
           'PhoneNumber': payment.phoneNumber,
-          'CallBackURL': 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
+          'CallBackURL':
+              'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
           'AccountReference': payment.reference,
           'TransactionDesc': payment.description,
         }),
@@ -116,11 +122,13 @@ class MpesaDataSourceImpl implements MpesaDataSource {
   }
 
   @override
-  Future<Map<String, dynamic>> queryTransactionStatus(String checkoutRequestId) async {
+  Future<Map<String, dynamic>> queryTransactionStatus(
+      String checkoutRequestId) async {
     try {
       final accessToken = await _getAccessToken();
       final timestamp = _getTimestamp();
-      final password = _generatePassword(_businessShortCode, _passKey, timestamp);
+      final password =
+          _generatePassword(_businessShortCode, _passKey, timestamp);
 
       final response = await http.post(
         Uri.parse(_queryUrl),
@@ -145,7 +153,8 @@ class MpesaDataSourceImpl implements MpesaDataSource {
       } else {
         return {
           'success': false,
-          'message': result['errorMessage'] ?? 'Failed to query transaction status',
+          'message':
+              result['errorMessage'] ?? 'Failed to query transaction status',
         };
       }
     } catch (e) {
