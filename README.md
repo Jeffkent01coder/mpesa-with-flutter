@@ -125,36 +125,6 @@ Follow these steps to set up the project locally:
      Test with different phone numbers and amounts.
      Verify error handling for failed transactions.
 
-**Project Structure**
-Here's an overview of the project structure:
-
-mpesa-with-flutter/
-├── lib/
-│   ├── data/
-│   │   ├── datasources/
-│   │   │   └── mpesa_data_source.dart
-│   │   ├── models/
-│   │   │   └── payment_model.dart
-│   │   └── repositories/
-│   │       └── payment_repository_impl.dart
-│   ├── domain/
-│   │   ├── entities/
-│   │   │   └── payment.dart
-│   │   ├── repositories/
-│   │   │   └── payment_repository.dart
-│   │   └── usecases/
-│   │       └── process_payment_usecase.dart
-│   ├── presentation/
-│   │   ├── pages/
-│   │   │   └── payment_page.dart
-│   │   └── providers/
-│   │       └── payment_provider.dart
-│   └── main.dart
-├── assets/
-│   └── pesa.jpg
-├── pubspec.yaml
-└── README.md
-
 ## Contributing
 
 Contributions are welcome! Here's how you can contribute:
